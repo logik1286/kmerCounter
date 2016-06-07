@@ -1,4 +1,4 @@
-The application requires Kyoto Cabinet to run. I've included a tar.gz of the source in the directory kyoto. It needs to be built and installed before running CMake.
+The application requires Kyoto Cabinet to run. It needs to be built and installed before running CMake.
 Kyoto does have Windows bindings, but in the interest of time I've chosen to focus on testing Linux.
 
 It's been fun, kmerCounter.
