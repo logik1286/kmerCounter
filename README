@@ -1,0 +1,59 @@
+The application requires Kyoto Cabinet to run. I've included a tar.gz of the source in the directory kyoto. It needs to be built and installed before running CMake.
+Kyoto does have Windows bindings, but in the interest of time I've chosen to focus on testing Linux.
+
+It's been fun, kmerCounter.
+
+---------------------
+Benchmark:
+CPU: i7-5775c @ 3.3 GHz
+RAM: 32GB DDR3-1600
+SSD: Samsung 850 Pro
+OS: Ubuntu 14.04
+
+Sequences: 1.7 million
+Time: 130 seconds
+Peak memory: 3.7 GB
+Peak disk usage: 4.0 GB
+
+Friendly note, for large cases the program may appear to stop after printing "getting kmers". Do check top, but chances are it's fine and just searching through a massive database.
+----------------------
+
+Some assumptions:
+1. All base pairs can be converted to upper case, requring only 3 bits to represent all possible base pairs.
+   Most of my background reading indicated that honoring lower case gtacn sequences isn't really relevant to this application.
+2. Kmers containing N nucleotides are acknowledged as viable. Some of my research hinted that these sequences should be thrown out, but no strong indications that was the right thing to do.
+3. I was giving a memory constraint and not a timing constraint, so I've fixed this application to run within ~4GB of RAM. Some low-end laptops only have this much, but I imagine most
+   engineers and scientists using this application will have access to at least 8 GB worth of RAM, if not more. Regardless, this can be easiy changed by adjusting the db parameters in keyCache.h.
+
+Next steps:
+This application has been a lot of fun to develop and I still have several thoughts on how to enhance it.
+Sadly I don't have time to see them to fruition. Here they are:
+
+ 1. Autotuner for Kyoto Cabinet (database library). 
+
+    The library provides a way to adjust database parameters (number of hash buckets, RAM buffers) that can have a drastic impact on performance. 
+    My baseline case went from 100 s to 20 s by simply tuning the database.
+    It seems that this tuning is largely dependent on the kmer size and number of sequences, so perhaps
+    it would be possible to come up with an algorithm that selects the right database parameters per the given inputs.
+
+	Another parameter that can be tuned that isn't specific to the Kyoto library is the frequency which the KmerCounters write their current tabulations to the database.
+	This would come at increased memory consumption. 
+
+ 2. Allow for in-memory processing only. 
+
+    The requirement to be able to process massive datasets called for a database package (I used Kyoto Cabinet).
+    This of course had a negative impact on performance. Kyoto does offer some database classes that operate purely in memory, so perhaps
+    an option could allow the user to choose a disk base or RAM base database (and it could be passed in to keyCounter.h as a template argument).
+
+ 3. Multithreading. 
+
+    On it's own, this application could be parallelized by running multiple instances of it on a computer or a cluster.
+    This application could internally be threaded, say with a disk I/O thread to allow kmer processing in parallel to writing to the database.
+    Or having multiple threads process an entire FASTQ file in parallel and writing to their own independent databases, with some final
+    step to merge the databases and retrive the top N kmers. That search alone could be done multitheraded with a parallel scan algorithm.
+    Lot's of options to leverage multicore processing, just not enough time to really do it any justice.
+
+ 4. Custom database
+
+	The major bottleneck in this application is of course writing to the database. I'm not a database expert, so I doubt I'd be able to come up with something better
+	than what is provided by an off the shelf solution (GDBM, Kyoto, etc.) in reasonable time, however I do wonder if a custom database could provide better performance.
