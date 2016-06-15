@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5.2)
+cmake_minimum_required (VERSION 3.2)
 project (kmerCounter CXX)
 
 set(CMAKE_BUILD_TYPE Release)
